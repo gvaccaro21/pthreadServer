@@ -5,7 +5,7 @@ Before editing any files/ adding any files ALWAYS pull the repositories. You do 
 
 i) "git pull origin master" 
 
-	The steps once you created and/or added a new file to the repository are as 		follows:
+	The steps once you created and/or added a new file to the repository are as follows:
 
 i) “git add -A” 
 
@@ -13,7 +13,7 @@ i) “git add -A”
 
 ii) “git commit -m “commit message” 
 
-	As annoying as this step may be, the git will not allow you to commit without 		writing the message and it keeps everyone updated on any changes you made to the 	file.
+	As annoying as this step may be, the git will not allow you to commit without writing the message and it keeps everyone updated on any changes you made to the 	file.
 
 iii) “git push origin master”
 
