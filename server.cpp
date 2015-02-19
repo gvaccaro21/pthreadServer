@@ -6,8 +6,12 @@
 #include <string>
 #include <unistd.h>
 #include <sys/types.h> 
-#include <sys/socket.h>
-#include <netinet/in.h>
+#ifdef __WIN32__
+	#include <winsock2.h>
+#else
+	#include <sys/socket.h>
+	#include <netinet/in.h>
+#endif
 #include <iostream>
 #include <sstream>
 #include <pthread.h>
