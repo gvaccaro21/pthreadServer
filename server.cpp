@@ -10,6 +10,7 @@
 #include <netinet/in.h>
 #include <iostream>
 #include <sstream>
+#include <pthread.h>
 
 using namespace std;
 
@@ -25,10 +26,10 @@ int main(int argc, char *argv[])
      socklen_t clilen;
      stringstream ss;
      char buffer[256];
-     char* numArray[2];
-     double product = 1;
+     double numArray[2];
+     double product;
      struct sockaddr_in serv_addr, cli_addr;
-     int n;
+     int i, n;
      if (argc < 2) {
          fprintf(stderr,"ERROR, no port provided\n");
          exit(1);
@@ -55,19 +56,16 @@ int main(int argc, char *argv[])
      	bzero(buffer,256);
      	n = read(newsockfd,buffer,255);
      	if (n < 0) error("ERROR reading from socket");
-     	for (int i = 0; i < 2; i++) {
-		numArray[i] = strtok(buffer, " ");
-//     		printf("Num%d: %s\n", i, numArray[i]);
-     	}
+	sscanf(buffer, "%lf%lf", &numArray[0], &numArray[1]);
      	printf("Here is the message: %s\n",buffer);
-     	product = atof(numArray[0]) * atof(numArray[1]);
+     	product = numArray[0] * numArray[1];
      	ss << "The product is " <<  product;
      	string prodstring = ss.str();
 	ss.str("");
      	n = write(newsockfd,prodstring.c_str(),prodstring.length());
      	if (n < 0) error("ERROR writing to socket");
+     	close(newsockfd);
      }
-     close(newsockfd);
      close(sockfd);
      return 0; 
 }
