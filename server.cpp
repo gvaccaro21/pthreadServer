@@ -3,10 +3,19 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <string>
 #include <unistd.h>
 #include <sys/types.h> 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <iostream>
+#include <sstream>
+
+#define totalConnections 0
+#define productSum 0
+
+
+using namespace std;
 
 void error(const char *msg)
 {
@@ -18,7 +27,10 @@ int main(int argc, char *argv[])
 {
      int sockfd, newsockfd, portno;
      socklen_t clilen;
+     stringstream ss;
      char buffer[256];
+     char* numArray[2];
+     double product = 1;
      struct sockaddr_in serv_addr, cli_addr;
      int n;
      if (argc < 2) {
@@ -36,19 +48,29 @@ int main(int argc, char *argv[])
      if (bind(sockfd, (struct sockaddr *) &serv_addr,
               sizeof(serv_addr)) < 0) 
               error("ERROR on binding");
-     listen(sockfd,5);
-     clilen = sizeof(cli_addr);
-     newsockfd = accept(sockfd, 
-                 (struct sockaddr *) &cli_addr, 
-                 &clilen);
-     if (newsockfd < 0) 
-          error("ERROR on accept");
-     bzero(buffer,256);
-     n = read(newsockfd,buffer,255);
-     if (n < 0) error("ERROR reading from socket");
-     printf("Here is the message: %s\n",buffer);
-     n = write(newsockfd,"I got your message",18);
-     if (n < 0) error("ERROR writing to socket");
+     while (1) {
+	listen(sockfd,5);
+    	clilen = sizeof(cli_addr);
+     	newsockfd = accept(sockfd, 
+        	         (struct sockaddr *) &cli_addr, 
+                	 &clilen);
+     	if (newsockfd < 0) 
+        	  error("ERROR on accept");
+     	bzero(buffer,256);
+     	n = read(newsockfd,buffer,255);
+     	if (n < 0) error("ERROR reading from socket");
+     	for (int i = 0; i < 2; i++) {
+		numArray[i] = strtok(buffer, " ");
+//     		printf("Num%d: %s\n", i, numArray[i]);
+     	}
+     	printf("Here is the message: %s\n",buffer);
+     	product = atof(numArray[0]) * atof(numArray[1]);
+     	ss << "The product is " <<  product;
+     	string prodstring = ss.str();
+	ss.str("");
+     	n = write(newsockfd,prodstring.c_str(),prodstring.length());
+     	if (n < 0) error("ERROR writing to socket");
+     }
      close(newsockfd);
      close(sockfd);
      return 0; 
