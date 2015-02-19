@@ -27,13 +27,13 @@ void error(const char *msg)
     exit(1);
 }
 
-void *multiply(void *threadarg) {
+void *multiply(void* threadarg) {
 	stringstream ss;
 	char buffer[256];
 	int n;
 	double numArray[2];
      	double product;
-	int socketNum = (int)threadarg;
+	int socketNum = *((int*)threadarg);
 
 	connectionCount++;
 	bzero(buffer,256);
@@ -91,7 +91,8 @@ int main(int argc, char *argv[])
                 	 &clilen);
      	if (newsockfd < 0) 
         	  error("ERROR on accept");
-	pthread_create(&socketThread[i], &attr, multiply, (void *)newsockfd);
+//	int *socketNum = malloc(sizeof(*socketNum));
+	pthread_create(&socketThread[i], &attr, multiply, (void *) &newsockfd);
      }
  
      pthread_attr_destroy(&attr);
