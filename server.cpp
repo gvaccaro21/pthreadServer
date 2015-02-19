@@ -11,10 +11,6 @@
 #include <iostream>
 #include <sstream>
 
-#define totalConnections 0
-#define productSum 0
-
-
 using namespace std;
 
 void error(const char *msg)
