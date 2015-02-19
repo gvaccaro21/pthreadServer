@@ -19,6 +19,9 @@ int THREAD_COUNT = 10;
 int connectionCount = 0;
 double productSum = 0;
 
+pthread_mutex_t updateMutex, productMutex;
+
+
 using namespace std;
 
 void error(const char *msg)
@@ -35,14 +38,18 @@ void *multiply(void* threadarg) {
      	double product;
 	int socketNum = *((int*)threadarg);
 
+	pthread_mutex_lock(&updateMutex);
 	connectionCount++;
+	pthread_mutex_unlock(&updateMutex);		
 	bzero(buffer,256);
      	n = read(socketNum,buffer,255);
      	if (n < 0) error("ERROR reading from socket");
 	sscanf(buffer, "%lf%lf", &numArray[0], &numArray[1]);
      	printf("Here is the message: %s\n",buffer);
      	product = numArray[0] * numArray[1];
+	pthread_mutex_lock(&productMutex);
 	productSum += product;
+	pthread_mutex_unlock(&productMutex);
      	ss << "The product is " <<  product;
      	string prodstring = ss.str();
 	ss.str("");
@@ -83,7 +90,7 @@ int main(int argc, char *argv[])
      pthread_attr_init(&attr);
      pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 //     while (1) 
-     for (i = 0; i < THREAD_COUNT; i++) {
+     for (i = 0; i <= THREAD_COUNT; i++) {
 	listen(sockfd,5);
     	clilen = sizeof(cli_addr);
      	newsockfd = accept(sockfd, 
