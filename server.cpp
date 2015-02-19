@@ -15,6 +15,9 @@
 #include <iostream>
 #include <sstream>
 #include <pthread.h>
+int THREAD_COUNT = 10;
+int connectionCount = 0;
+double productSum = 0;
 
 using namespace std;
 
@@ -24,16 +27,44 @@ void error(const char *msg)
     exit(1);
 }
 
+void *multiply(void *threadarg) {
+	stringstream ss;
+	char buffer[256];
+	int n;
+	double numArray[2];
+     	double product;
+	int socketNum = (int)threadarg;
+
+	connectionCount++;
+	bzero(buffer,256);
+     	n = read(socketNum,buffer,255);
+     	if (n < 0) error("ERROR reading from socket");
+	sscanf(buffer, "%lf%lf", &numArray[0], &numArray[1]);
+     	printf("Here is the message: %s\n",buffer);
+     	product = numArray[0] * numArray[1];
+	productSum += product;
+     	ss << "The product is " <<  product;
+     	string prodstring = ss.str();
+	ss.str("");
+     	n = write(socketNum,prodstring.c_str(),prodstring.length());
+     	if (n < 0) error("ERROR writing to socket");
+     	close(socketNum);
+	pthread_exit((void*) 0);
+}
+
 int main(int argc, char *argv[])
 {
      int sockfd, newsockfd, portno;
      socklen_t clilen;
-     stringstream ss;
-     char buffer[256];
-     double numArray[2];
-     double product;
+     long t;
+     void *status;
+     
+     pthread_t socketThread[THREAD_COUNT];
+     pthread_attr_t attr;
+     
+    
      struct sockaddr_in serv_addr, cli_addr;
-     int i, n;
+     int i, rc;
      if (argc < 2) {
          fprintf(stderr,"ERROR, no port provided\n");
          exit(1);
@@ -49,7 +80,10 @@ int main(int argc, char *argv[])
      if (bind(sockfd, (struct sockaddr *) &serv_addr,
               sizeof(serv_addr)) < 0) 
               error("ERROR on binding");
-     while (1) {
+     pthread_attr_init(&attr);
+     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
+//     while (1) 
+     for (i = 0; i < THREAD_COUNT; i++) {
 	listen(sockfd,5);
     	clilen = sizeof(cli_addr);
      	newsockfd = accept(sockfd, 
@@ -57,19 +91,12 @@ int main(int argc, char *argv[])
                 	 &clilen);
      	if (newsockfd < 0) 
         	  error("ERROR on accept");
-     	bzero(buffer,256);
-     	n = read(newsockfd,buffer,255);
-     	if (n < 0) error("ERROR reading from socket");
-	sscanf(buffer, "%lf%lf", &numArray[0], &numArray[1]);
-     	printf("Here is the message: %s\n",buffer);
-     	product = numArray[0] * numArray[1];
-     	ss << "The product is " <<  product;
-     	string prodstring = ss.str();
-	ss.str("");
-     	n = write(newsockfd,prodstring.c_str(),prodstring.length());
-     	if (n < 0) error("ERROR writing to socket");
-     	close(newsockfd);
+	pthread_create(&socketThread[i], &attr, multiply, (void *)newsockfd);
      }
+ 
+     pthread_attr_destroy(&attr);
+     
+     printf("Total connections: %d\nTotal Sum: %f\n", connectionCount, productSum);
      close(sockfd);
      return 0; 
 }
