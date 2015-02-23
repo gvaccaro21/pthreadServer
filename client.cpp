@@ -19,7 +19,7 @@ using namespace std;
 #define INITIAL_SEED 1
 
 typedef struct  {
-	int x, y sockfd, portno, n;
+	int x, y, sockfd, portno, n;
 	struct sockaddr_in serv_addr;
 	struct hostent *server;	
 } operands;
