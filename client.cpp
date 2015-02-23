@@ -51,10 +51,10 @@ int main(int argc, char *argv[])
 	if (connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
 		error("ERROR connecting");
 	
-	string contConnection = "yes";
-	while (contConnection == "yes")
-	{
-		contConnection = "";
+	//string contConnection = "yes";
+	//while (contConnection == "yes")
+	//{
+		//contConnection = "";
 		//printf("Please enter the message: ");
 		//buffer = 0;
 		srand(time(NULL));
@@ -83,9 +83,9 @@ int main(int argc, char *argv[])
 			error("ERROR reading from socket");
 		printf("%s\n", buffer);
 		
-		cout << "Continue?\n";
-		cin >> contConnection;
-	}
+		//cout << "Continue?\n";
+		//cin >> contConnection;
+	//}
     close(sockfd);
     return 0;
 }
