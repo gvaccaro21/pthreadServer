@@ -49,7 +49,7 @@ void *worker_thread(void *arg) {
 	if (my_opers->sockfd < 0)
 		error("ERROR opening socket");
 
-	if my_opers->(server == NULL) {
+	if (my_opers->server == NULL) {
 		fprintf(stderr, "ERROR, no such host\n");
 		exit(0);
 	}
@@ -59,7 +59,7 @@ void *worker_thread(void *arg) {
 		(char *)&my_opers->serv_addr.sin_addr.s_addr,
 		my_opers->server->h_length);
 
-	my_opers->serv_addr.sin_port = htons(portno);
+	my_opers->serv_addr.sin_port = htons(my_opers->portno);
 
 	if (connect(my_opers->sockfd, (struct sockaddr *) &my_opers->serv_addr, sizeof(my_opers->serv_addr)) < 0)
 		error("ERROR connecting");
