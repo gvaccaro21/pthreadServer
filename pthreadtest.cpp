@@ -1,4 +1,6 @@
 
+
+
 // thread01.c
 #include <pthread.h>
 #include <stdio.h>
@@ -16,9 +18,9 @@ typedef struct  {
 void *worker_thread(void *arg) {
         operands *my_opers = (operands *)arg;
         int sum = my_opers->x + my_opers->y;
-        printf("X=%i\n", my_opers->x);
-        printf("Y=%i\n", my_opers->y);
-        printf("This is worker_thread #%ld\n", (long)sum);
+        printf("%i ", my_opers->x);
+        printf("%i\n", my_opers->y);
+//        printf("This is worker_thread #%ld\n", (long)sum);
         pthread_exit(NULL);
 }
 
@@ -43,7 +45,7 @@ int main(int argc, const char* argv[]) {
 
 
         long id;
-        for(id = 1; id <= N; id++) {
+        for(id = 2; id <= N; id++) {
                 my_operands[id].x = rand() % 100;
                 my_operands[id].y = rand() % 100;
                 int ret = pthread_create(&my_thread[id], NULL, &worker_thread, (void*)&(my_operands[id]));
