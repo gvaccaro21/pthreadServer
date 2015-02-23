@@ -45,6 +45,22 @@ void *worker_thread(void *arg) {
 	ss << my_opers->x << " " << my_opers->y;
 	string message = ss.str();
 
+	my_opers->sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	if (my_opers->sockfd < 0)
+		error("ERROR opening socket");
+
+	if my_opers->(server == NULL) {
+		fprintf(stderr, "ERROR, no such host\n");
+		exit(0);
+	}
+	bzero((char *)&my_opers->serv_addr, sizeof(my_opers->serv_addr));
+	my_opers->serv_addr.sin_family = AF_INET;
+	bcopy((char *)my_opers->server->h_addr,
+		(char *)&my_opers->serv_addr.sin_addr.s_addr,
+		my_opers->server->h_length);
+
+	my_opers->serv_addr.sin_port = htons(portno);
+
 	if (connect(my_opers->sockfd, (struct sockaddr *) &my_opers->serv_addr, sizeof(my_opers->serv_addr)) < 0)
 		error("ERROR connecting");
 	//sned values to server
@@ -81,7 +97,7 @@ int main(int argc, char *argv[])
 
 	portno = atoi(argv[2]);
 	server = gethostbyname(argv[1]);
-
+	/*
 	sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (sockfd < 0)
 		error("ERROR opening socket");
@@ -97,7 +113,7 @@ int main(int argc, char *argv[])
 		server->h_length);
 
 	serv_addr.sin_port = htons(portno);
-	
+	*/
 
 	//Create random variables
 	//////////////////////////////////////////////////////////
@@ -122,7 +138,7 @@ int main(int argc, char *argv[])
 
 
 	long id;
-	for (id = 1; id <= N; id++) {
+	for (id = 2; id <= N; id++) {
 		my_operands[id].sockfd = sockfd;
 		my_operands[id].portno = portno;
 		my_operands[id].serv_addr = serv_addr;
