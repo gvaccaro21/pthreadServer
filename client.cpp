@@ -42,7 +42,7 @@ void *worker_thread(void *arg) {
 //--Send and receive communications--//
 	//Write random values to string
 	stringstream ss;
-	ss << r1 << " " << r2;
+	ss << my_opers->x << " " << my_opers->y;
 	string message = ss.str();
 
 	if (connect(my_opers->sockfd, (struct sockaddr *) &my_opers->serv_addr, sizeof(my_opers->serv_addr)) < 0)
