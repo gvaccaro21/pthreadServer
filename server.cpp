@@ -32,59 +32,77 @@ void error(const char *msg)
 
 typedef struct {
 	bool useMutex;
-	int socketNum;
+	int sockfd;
 } sockMutex;
 
 void *multiply(void* threadarg) {
 	stringstream ss;
 	char buffer[256];
-	int n;
+	int n, socketNum; 
+	socklen_t clilen;
 	double numArray[2];
      	double product;
+	struct sockaddr_in cli_addr;
 	sockMutex sockInfo = *((sockMutex*)threadarg);
-	int socketNum = sockInfo.socketNum;
-	
+	listen(sockInfo.sockfd,5);
+    	clilen = sizeof(cli_addr);
+//     	while (socketNum < 0) {
+		socketNum = accept(sockInfo.sockfd, 
+        	        	 (struct sockaddr *) &cli_addr, 
+                		 &clilen);
+     		if (socketNum < 0) 
+        		  error("ERROR on accept");
+//		printf("Socket: %i\n", socketNum);
+//	}
+	int connectionNumber = connectionCount;
 	if (sockInfo.useMutex) {
 		pthread_mutex_lock(&updateMutex);
-		connectionCount++;
+//		connectionCount++;
+		connectionCount = connectionNumber + 1;
 		pthread_mutex_unlock(&updateMutex);
 	}
 	else
-		connectionCount++;
+//		connectionCount++;
+		connectionCount = connectionNumber;
 	bzero(buffer,256);
      	n = read(socketNum,buffer,255);
      	if (n < 0) error("ERROR reading from socket");
 	sscanf(buffer, "%lf%lf", &numArray[0], &numArray[1]);
      	printf("Here is the message: %s\n",buffer);
      	product = numArray[0] * numArray[1];
+	double prodSum = productSum;
 	if (sockInfo.useMutex) {
 		pthread_mutex_lock(&productMutex);
-		productSum += product;
+//		productSum += product;
+		productSum = prodSum + product;
 		pthread_mutex_unlock(&productMutex);
 	}
 	else
-		productSum += product;
+//		productSum += product;
+		productSum = prodSum + product;
      	ss << "The product is " <<  product;
      	string prodstring = ss.str();
 	ss.str("");
      	n = write(socketNum,prodstring.c_str(),prodstring.length());
      	if (n < 0) error("ERROR writing to socket");
      	close(socketNum);
+	printf("Sum of Products = %lf\n", productSum); 
 	pthread_exit((void*) 0);
 }
 
 int main(int argc, char *argv[])
 {
      int sockfd, newsockfd, portno;
-     socklen_t clilen;
+//     socklen_t clilen;
      long t;
      void *status;
      bool useMutex = false;
 
      pthread_t socketThread[THREAD_COUNT];
+     sockMutex socketInfo;
      pthread_attr_t attr;
 
-     struct sockaddr_in serv_addr, cli_addr;
+     struct sockaddr_in serv_addr;
      int i, rc;
      if (argc < 3) {
          fprintf(stderr,"Usage:\n%s -p port_number -m\n\t-p, --port: Port number (anything above 1024)\n\t-m, --mutex: Enable mutex\n", argv[0]);
@@ -118,10 +136,10 @@ int main(int argc, char *argv[])
      pthread_attr_init(&attr);
      pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 //     while (1) 
-     for (i = 0; i <= THREAD_COUNT; i++) {
-	sockMutex socketInfo;
 	socketInfo.useMutex = useMutex;
-	listen(sockfd,5);
+	socketInfo.sockfd = sockfd;
+     for (i = 0; i < THREAD_COUNT; i++) {
+/*	listen(sockfd,5);
     	clilen = sizeof(cli_addr);
      	newsockfd = accept(sockfd, 
         	         (struct sockaddr *) &cli_addr, 
@@ -129,12 +147,19 @@ int main(int argc, char *argv[])
      	if (newsockfd < 0) 
         	  error("ERROR on accept");
 //	int *socketNum = malloc(sizeof(*socketNum));
-	socketInfo.socketNum = newsockfd;
-	pthread_create(&socketThread[i], &attr, multiply, (void *) &socketInfo);
+	socketInfo.socketNum = newsockfd; */
+	int ret = pthread_create(&socketThread[i], &attr, multiply, (void *) &socketInfo);
+	if (ret != 0) {
+		printf("Error: pthread_create() failed\n");
+		exit(EXIT_FAILURE);
+	}     
      }
  
      pthread_attr_destroy(&attr);
-     
+     while (connectionCount < 10) {
+
+	}
+     sleep(1);
      printf("Total connections: %d\nTotal Sum: %f\n", connectionCount, productSum);
      close(sockfd);
      return 0; 

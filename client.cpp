@@ -15,7 +15,7 @@
 
 using namespace std;
 
-#define N 2
+#define N 10
 #define INITIAL_SEED 1
 
 typedef struct  {
@@ -35,8 +35,8 @@ void *worker_thread(void *arg) {
 	char buffer[256];
 	operands *my_opers = (operands *)arg;
 	int sum = my_opers->x + my_opers->y;
-	printf("%i ", my_opers->x);
-	printf("%i\n", my_opers->y);
+//	printf("%i ", my_opers->x);
+//	printf("%i\n", my_opers->y);
 	//        printf("This is worker_thread #%ld\n", (long)sum);
 
 //--Send and receive communications--//
@@ -44,7 +44,7 @@ void *worker_thread(void *arg) {
 	stringstream ss;
 	ss << my_opers->x << " " << my_opers->y;
 	string message = ss.str();
-
+	cout << "Sending: " << message << endl;
 	my_opers->sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	if (my_opers->sockfd < 0)
 		error("ERROR opening socket");
@@ -68,7 +68,7 @@ void *worker_thread(void *arg) {
 	if (my_opers->n < 0)
 		error("ERROR writing to socket");
 
-	//Get responce from server
+	//Get response from server
 	bzero(buffer, 256);
 	my_opers->n = read(my_opers->sockfd, buffer, 255);
 	if (my_opers->n < 0)
@@ -138,8 +138,8 @@ int main(int argc, char *argv[])
 
 
 	long id;
-	for (id = 2; id <= N; id++) {
-		my_operands[id].sockfd = sockfd;
+	for (id = 1; id <= N; id++) {
+//		my_operands[id].sockfd = sockfd;
 		my_operands[id].portno = portno;
 		my_operands[id].serv_addr = serv_addr;
 		my_operands[id].server = server;
@@ -150,6 +150,7 @@ int main(int argc, char *argv[])
 			printf("Error: pthread_create() failed\n");
 			exit(EXIT_FAILURE);
 		}
+//	usleep(1);
 	}
 
 	pthread_exit(NULL);
